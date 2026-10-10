@@ -8,10 +8,13 @@ import {
 	type Palette,
 } from "../src/index.ts";
 
+/** Image URL → data URI, downloaded by preview.ts (never committed). */
+export type Images = Record<string, string>;
+
 export interface Sample {
 	name: string;
 	options: Omit<CardOptions, "palette">;
-	content: (p: Palette) => string;
+	content: (p: Palette, img: Images) => string;
 }
 
 const W = 868;
@@ -44,20 +47,75 @@ const paragraph = (text: string, width: number, p: Palette) =>
 const truncate = (s: string, max: number) =>
 	[...s].length > max ? `${[...s].slice(0, max - 1).join("")}…` : s;
 
+/** An image clipped to 2px corners, with a 1px border on top. */
+function picture(
+	id: string,
+	href: string | undefined,
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+	p: Palette,
+): string {
+	const box = `x="${x}" y="${y}" width="${w}" height="${h}"`;
+	if (!href) return `<rect ${box} rx="2" fill="${p.border}"/>`;
+	return (
+		`<clipPath id="${id}"><rect ${box} rx="2"/></clipPath>` +
+		`<image ${box} href="${href}" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/>` +
+		`<rect ${box} rx="2" fill="none" stroke="${p.border}"/>`
+	);
+}
+
 const BIO =
 	"I write code by day and disappear into FL Studio by night, making tracks for the imaginary soundtrack of my own life.";
 const STACK =
 	"Java, C/C++, PL/SQL, SQL, PowerShell/Bash, CI/CD, Docker, message queues, clustering, load balancing, and enough CAP/PACELC theorem to argue about it at parties nobody invited me to.";
 
-const TRACKS = [
-	["Ночной город", "MiatriSs"],
-	["Awakening", "Normandie"],
-	["Go", "The Chemical Brothers, Q-Tip"],
+/** Real recently-played entries (covers from Yandex Music's public CDN). */
+const TRACKS: [string, string, string][] = [
+	[
+		"ПРИЛЕТЕЛА",
+		"MiatriSs",
+		"https://avatars.yandex.net/get-music-content/20855185/d5b0727c.a.44081874-1/100x100",
+	],
+	[
+		"Awakening",
+		"Normandie",
+		"https://avatars.yandex.net/get-music-content/98892/4fbc6e6c.a.5202310-1/100x100",
+	],
+	[
+		"Go",
+		"The Chemical Brothers, Q-Tip",
+		"https://avatars.yandex.net/get-music-content/108289/6474a55e.a.8128644-1/100x100",
+	],
 	[
 		"victory lap (extended version with an unreasonably long title that must be truncated)",
 		"Windwaker",
+		"https://avatars.yandex.net/get-music-content/14651289/0a287e3f.a.37909878-2/100x100",
 	],
-	["Hard Feelings", "Poppy"],
+	[
+		"Hard Feelings",
+		"Poppy",
+		"https://avatars.yandex.net/get-music-content/103235/754b6e64.a.6250730-1/100x100",
+	],
+];
+
+/** Posters from MyAnimeList's public CDN. */
+const ANIME: [string, string][] = [
+	[
+		"Sousou no Frieren",
+		"https://cdn.myanimelist.net/images/anime/1015/138006.jpg",
+	],
+	[
+		"Fullmetal Alchemist: Brotherhood",
+		"https://cdn.myanimelist.net/images/anime/1208/94745.jpg",
+	],
+	["Steins;Gate", "https://cdn.myanimelist.net/images/anime/1935/127974.jpg"],
+];
+
+export const IMAGE_URLS = [
+	...TRACKS.map(([, , url]) => url),
+	...ANIME.map(([, url]) => url),
 ];
 
 export const SAMPLES: Sample[] = [
@@ -97,7 +155,7 @@ export const SAMPLES: Sample[] = [
 			title: "Anime Stats",
 			font: { variant: "text", weights: [400, 700] },
 		},
-		content: (p) => {
+		content: (p, img) => {
 			const stats = [
 				["517", "Total"],
 				["296", "Completed"],
@@ -116,13 +174,12 @@ export const SAMPLES: Sample[] = [
 					);
 				})
 				.join("");
-			const posters = [0, 1, 2]
-				.map(
-					(i) =>
-						`<rect x="${i * 290}" y="96" width="60" height="84" rx="2" fill="${p.border}"/>` +
-						`<text x="${i * 290 + 72}" y="114" font-size="13" fill="${p.text}">${esc(truncate("Sousou no Frieren Season 2", 26))}</text>`,
-				)
-				.join("");
+			const posters = ANIME.map(
+				([title, url], i) =>
+					picture(`mal-p${i}`, img[url], i * 290, 96, 60, 84, p) +
+					`<text x="${i * 290 + 72}" y="114" font-size="13" fill="${p.text}">${esc(truncate(title, 26))}</text>` +
+					`<text x="${i * 290 + 72}" y="132" font-size="11" fill="${p.subtext}">1mo ago</text>`,
+			).join("");
 			return `<g font-family="${FONT_STACK}">${tiles}${posters}</g>`;
 		},
 	},
@@ -136,14 +193,14 @@ export const SAMPLES: Sample[] = [
 			title: "Recently Played",
 			font: { variant: "text", weights: [400, 700] },
 		},
-		content: (p) =>
+		content: (p, img) =>
 			`<g font-family="${FONT_STACK}">` +
-			TRACKS.map(([title, artist], i) => {
+			TRACKS.map(([title, artist, url], i) => {
 				const y = i * 56;
 				return (
-					`<rect x="0" y="${y}" width="48" height="48" rx="2" fill="${p.border}"/>` +
-					`<text x="64" y="${y + 20}" font-size="16" font-weight="700" fill="${i === 0 ? p.accent : p.text}">${esc(truncate(title ?? "", 60))}</text>` +
-					`<text x="64" y="${y + 40}" font-size="13" fill="${p.subtext}">${esc(artist ?? "")}</text>`
+					picture(`ym-c${i}`, img[url], 0, y, 48, 48, p) +
+					`<text x="64" y="${y + 20}" font-size="16" font-weight="700" fill="${i === 0 ? p.accent : p.text}">${esc(truncate(title, 60))}</text>` +
+					`<text x="64" y="${y + 40}" font-size="13" fill="${p.subtext}">${esc(artist)}</text>`
 				);
 			}).join("") +
 			`</g>`,

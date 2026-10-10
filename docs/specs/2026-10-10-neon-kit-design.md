@@ -82,7 +82,7 @@ The user reviews it live in their browser, served from `127.0.0.1`. I check it w
 ## Release
 
 - CI runs on every push: lint, typecheck, tests, the font build check and a build.
-- Pushing a `v*` tag runs a job that does `npm publish --provenance --access public`, authenticated by an `NPM_TOKEN` repository secret. The user creates the npm account/token. That step can't be done for them.
+- Pushing a `v*` tag runs a job that does `npm publish --access public` via **npm trusted publishing** (GitHub OIDC; provenance automatic; no token). v1.0.0 is published once locally by the user (login + 2FA), because trusted publishing is configured per existing package. After that, token publishing is disallowed on npmjs.com.
 - Versioning is semver, and consumers pin `^1`.
 
 ## First consumer: contrib-neon v1.1.0

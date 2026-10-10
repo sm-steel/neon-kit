@@ -10,7 +10,8 @@ Agreed scope for the whole effort, with each sub-project getting its own spec, p
 2. Bio and Stack cards (`sm-steel/scripts/render-cards.mjs`): static PNGs become animated SVGs built on neon-kit.
 3. MAL stats widget: ported from Python to TypeScript on Vercel, using neon-kit.
 4. Yandex widget: ported to TypeScript and changed from "now playing" (the flaky Ynison WebSocket) to "recently played, 5 items" via `GET https://api.music.yandex.net/music-history?fullModelsCount=15`. This approach was proven by a throwaway test on 2026-10-10: HTTP 200 in ~0.15s, full track models with title, artists and `coverUri`. `fullModelsCount` counts history entries, not tracks, so the widget requests about 15 and keeps the first 5 tracks that have a `fullModel`.
-5. Profile README: `<picture>` updates, plus streak-stats URL tweaks (`border_radius=0`, crust background, surface0 border). Typing headers, the capsule divider, metrics.svg and badges stay as they are.
+5. Profile README: `<picture>` updates for every rebuilt card. Typing headers, the capsule divider and badges stay as they are.
+6. **GitHub stats + streak** (added 2026-10-10 at the user's request; replaces lowlighter/metrics and streak-stats.demolab.com): our own neon card(s) rendered with neon-kit from the GitHub GraphQL API in a daily workflow. It covers account/repo stats, the language bar, total contributions, and current and longest streak (computed from the contribution calendar, one request per year since joining). Whether it's one combined `// SYS.STATS` card or two cards is decided in that sub-project's design.
 
 Card extras the user chose: scanlines, HUD-style titles, transparent backdrop (no slab behind the cards), 2px inner radii, rolling scan beam, glitch tears, boot flicker and a blinking cursor.
 
@@ -107,6 +108,5 @@ The user reviews it live in their browser, served from `127.0.0.1`. I check it w
 
 ## Out of scope
 
-- Restyling metrics.svg, typing headers, the capsule divider and badges.
-- Replacing streak-stats.
+- Restyling typing headers, the capsule divider and badges (metrics.svg and streak-stats are replaced in sub-project 6 instead).
 - Glyphs beyond Latin and Cyrillic, such as CJK or kana; those fall back to system fonts.

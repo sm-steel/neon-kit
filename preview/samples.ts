@@ -102,12 +102,32 @@ const ANIME: [string, string][] = [
 	],
 ];
 
+/** The profile's banner art (1600×904), read from a sibling sm-steel checkout. */
+const BANNER = "file:../sm-steel/assets/banner.jpg";
+const FOOTER = "file:../sm-steel/assets/footer.jpg";
+
 export const IMAGE_URLS = [
 	...TRACKS.map(([, , url]) => url),
 	...ANIME.map(([, url]) => url),
+	BANNER,
+	FOOTER,
 ];
 
+/** Full-bleed artwork inside the frame: card width 868 keeps the outer width at 900 like the other cards. */
+const art = (name: string, url: string): Sample => ({
+	name,
+	options: {
+		width: W,
+		height: Math.round((W * 904) / 1600),
+		seed: `art:${name}`,
+		label: `${name} artwork`,
+	},
+	content: (p, img) =>
+		picture(`${name}-img`, img[url], 0, 0, W, Math.round((W * 904) / 1600), p),
+});
+
 export const SAMPLES: Sample[] = [
+	art("banner", BANNER),
 	{
 		name: "bio",
 		options: {
@@ -216,4 +236,5 @@ export const SAMPLES: Sample[] = [
 		content: (p) =>
 			`<g font-family="${FONT_STACK}">${paragraph("No glitch, no beam: frame, scanlines and boot only.", 418, p)}</g>`,
 	},
+	art("footer", FOOTER),
 ];

@@ -22,11 +22,17 @@ async function loadImages(): Promise<Images> {
 	await mkdir(cache, { recursive: true });
 	const images: Images = {};
 	for (const url of IMAGE_URLS) {
-		const file = join(cache, createHash("sha1").update(url).digest("hex"));
+		const file = url.startsWith("file:")
+			? url.slice("file:".length)
+			: join(cache, createHash("sha1").update(url).digest("hex"));
 		let data: Buffer;
 		try {
 			data = await readFile(file);
 		} catch {
+			if (url.startsWith("file:")) {
+				console.warn(`missing local image ${file} (placeholder used)`);
+				continue;
+			}
 			const res = await fetch(url);
 			if (!res.ok) {
 				console.warn(`image ${res.status}: ${url} (placeholder used)`);

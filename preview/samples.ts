@@ -163,17 +163,20 @@ export const SAMPLES: Sample[] = [
 					);
 				})
 				.join("");
-			const posters = ANIME.map(
-				([title, url], i) =>
+			const posters = ANIME.map(([title, url], i) => {
+				const lines = wrapLines(title, charsPerLine(200, 13), 3);
+				return (
 					picture(`mal-p${i}`, img[url], i * 290, 96, 60, 84, p) +
-					wrapLines(title, charsPerLine(200, 13), 3)
+					lines
 						.map(
 							(l, k) =>
 								`<text x="${i * 290 + 72}" y="${110 + k * 17}" font-size="13" fill="${p.text}">${esc(l)}</text>`,
 						)
 						.join("") +
-					`<text x="${i * 290 + 72}" y="172" font-size="11" fill="${p.subtext}">1mo ago</text>`,
-			).join("");
+					// directly below the last title line
+					`<text x="${i * 290 + 72}" y="${110 + lines.length * 17}" font-size="11" fill="${p.subtext}">1mo ago</text>`
+				);
+			}).join("");
 			return `<g font-family="${FONT_STACK}">${tiles}${posters}</g>`;
 		},
 	},

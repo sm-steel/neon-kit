@@ -24,6 +24,7 @@ export {
 	fontFace,
 } from "./font.ts";
 export { BRACKET, brackets, panel } from "./frame.ts";
+export { cardGrid, type GridCell, type GridOptions } from "./grid.ts";
 export {
 	cursorAfter,
 	cursorRect,

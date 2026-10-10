@@ -34,6 +34,11 @@ export interface CardOptions {
 	beam?: boolean;
 	boot?: boolean;
 	scanlines?: boolean;
+	/**
+	 * Prefix for the kit's ids, classes and keyframes (default "nk"). Give each card a
+	 * different one to put several cards in one SVG (cardGrid does this).
+	 */
+	ns?: string;
 }
 
 export const CARD = {
@@ -67,7 +72,22 @@ function validate(o: CardOptions, content: string): void {
 	const missing = PALETTE_KEYS.filter((k) => o.palette[k] === undefined);
 	if (missing.length)
 		throw new Error(`card: palette is missing ${missing.join(", ")}`);
+	if (o.ns !== undefined && !/^[a-z][a-z0-9]*$/.test(o.ns))
+		throw new Error(
+			`card: ns must be lowercase letters/digits starting with a letter, got "${o.ns}"`,
+		);
 }
+
+// Stand-ins for caller text while the kit's own markup is renamed (never valid XML text).
+const CONTENT = "\u0000content\u0000";
+const LABEL = "\u0000label\u0000";
+
+/**
+ * Renames the kit's `nk-` ids/classes/keyframes to `${ns}-`. Kit markup only ever writes
+ * `nk-` right after one of `" # ( . : { ,` or a space, so text inside words isn't touched.
+ */
+const renameKit = (svg: string, ns: string) =>
+	ns === "nk" ? svg : svg.replace(/(?<=[\s"#(.:{,])nk-/g, `${ns}-`);
 
 /** Wraps `content` (SVG markup drawn from 0,0) in the animated neon frame; returns a complete <svg>. */
 export function card(o: CardOptions, content: string): string {
@@ -96,7 +116,7 @@ export function card(o: CardOptions, content: string): string {
 					start: CARD.bootSeconds,
 					background: p.background,
 				});
-	const label = esc(o.label);
+	const label = LABEL;
 
 	const css =
 		(font ? fontFace(font.variant, font.weights) : "") +
@@ -115,7 +135,7 @@ export function card(o: CardOptions, content: string): string {
 		(o.glitch === false ? "" : tintDefs(p, region)) +
 		glitch.defs;
 
-	return (
+	const svg =
 		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${label}">` +
 		`<title>${label}</title>` +
 		`<style>${css}</style>` +
@@ -123,7 +143,7 @@ export function card(o: CardOptions, content: string): string {
 		`<g class="nk-boot">` +
 		panel(width, height, p) +
 		(o.title ? hudTitle(o.title, pad, pad + 10, p) : "") +
-		`<g id="nk-content" transform="translate(${pad} ${r3(top)})">${content}</g>` +
+		`<g id="nk-content" transform="translate(${pad} ${r3(top)})">${CONTENT}</g>` +
 		`</g>` +
 		glitch.svg +
 		(o.scanlines === false ? "" : scanlines(region)) +
@@ -131,6 +151,9 @@ export function card(o: CardOptions, content: string): string {
 		`<g class="nk-brk">${brackets(width, height, p)}</g>` +
 		// last stylesheet in the document, so it also beats CSS that came in with `content`
 		`<style>${REDUCED_MOTION_CSS}</style>` +
-		`</svg>`
-	);
+		`</svg>`;
+	// functions, not strings, so `$` sequences in caller text are inserted literally
+	return renameKit(svg, o.ns ?? "nk")
+		.replaceAll(LABEL, () => esc(o.label))
+		.replace(CONTENT, () => content);
 }

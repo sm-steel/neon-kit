@@ -34,13 +34,14 @@ const svg = card(
 );
 ```
 
-Draw your content from `0,0`. `card()` places it inside the frame. Escape any user text with `esc()`.
+Draw your content from `0,0`. `card()` places it inside the frame. Escape any user text with `esc()`. To lay out several cards in one image, use `cardGrid()`, or give each `card()` its own `ns`.
 
 ## API
 
 | Export | Purpose |
 |---|---|
 | `card(options, content)` | Wraps SVG content in the full animated frame and returns a complete `<svg>`. |
+| `cardGrid(options, cells)`, `GridCell`, `GridOptions` | Several cards in one SVG: each namespaced (`nk0-`, `nk1-`, …), its own glitch timing, one shared font. |
 | `CARD`, `cardTears(seed, area)` | Card constants (padding, title row, timings) and its seeded glitch tear. |
 | `FLAVORS`, `isFlavor`, `PALETTE_KEYS`, `Palette`, `Flavor` | Catppuccin latte, frappé, macchiato and mocha palettes. |
 | `fontFace(variant, weights)`, `FONT_FAMILY`, `FONT_STACK`, `CHAR_WIDTH_EM` | Embedded font `@font-face` CSS, the font-family stack, and the fixed glyph width (0.62em). |

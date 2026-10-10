@@ -59,9 +59,9 @@ card({
 
 ### Font build (`scripts/build-font.ts`, TypeScript, no Python)
 
-1. Download `MonaspaceNeon-Regular.woff2` and `-Bold.woff2` from `githubnext/monaspace` at tag `v1.400`, and verify a pinned SHA-256 for each.
-2. Subset with `subset-font` (HarfBuzz) using `noLayoutClosure: true`. That drops ligatures and texture healing, which contrib-neon already disables.
-3. Rewrite the `name` table to family `ContribNeon Mono`, as the OFL Reserved Font Name clause requires for a Monaspace subset. Copy name IDs 0 (copyright), 13 and 14 (license) from the original font. This is a ~60-line sfnt rewriter with recalculated checksums. The spike showed HarfBuzz drops IDs 13 and 14, so the copy step is required.
+1. Download the **variable** TrueType `Monaspace Neon Var.woff2` from `githubnext/monaspace` at tag `v1.400`, and verify SHA-256 `6569968f448ae856ab5b57dff1f13b109b220ca8e3f664169e135fcb5c4f0721`. *(Revised during planning: the static files are CFF fonts whose internal CFF names keep "Monaspace", which a `name`-table rewrite can't reach.)*
+2. Subset and instance with `subset-font` (HarfBuzz): `noLayoutClosure: true`, `variationAxes: { wght: 400|700, wdth: 100, slnt: 0 }`. That produces static TrueType with no CFF table, ~14.5 KB WOFF2 per weight for the `text` set. It also drops ligatures and texture healing, which contrib-neon already disables.
+3. Rebuild the `name` table with family `ContribNeon Mono`, as the OFL Reserved Font Name clause requires for a Monaspace subset. The source keeps its copyright and Reserved Font Name notice in **ID 7** and the license in ID 13, and HarfBuzz keeps only IDs 1–6. So ID 7 → ID 0, ID 13 → ID 13, and ID 14 is set to the OFL URL. Drop `STAT`. This is a small sfnt rewriter with recalculated checksums.
 4. Compress with `wawoff2` and write the result to `src/font-data.ts` as base64.
 5. Fail the build if Cyrillic U+0410–U+044F is missing, if the advance width of `A` ≠ 0.62 em, or if the copyright or license records are missing.
 

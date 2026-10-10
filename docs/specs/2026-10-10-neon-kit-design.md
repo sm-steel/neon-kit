@@ -7,7 +7,7 @@
 Agreed scope for the whole effort, with each sub-project getting its own spec, plan and approval:
 
 1. **neon-kit** (this spec): a shared TypeScript package with the look and effects, plus contrib-neon refactored onto it.
-2. Bio and Stack cards (`sm-steel/scripts/render-cards.mjs`): static PNGs become animated SVGs built on neon-kit.
+2. Bio and Stack cards (`sm-steel/scripts/render-cards.mjs`): static PNGs become animated SVGs built on neon-kit. Also the profile **banner and footer artwork** (`assets/banner.jpg`, `assets/footer.jpg`, 1600×904) as full-width image cards (frame, brackets, scanlines, glitch over the art), re-encoded to ~1736px wide at about q80.
 3. MAL stats widget: ported from Python to TypeScript on Vercel, using neon-kit.
 4. Yandex widget: ported to TypeScript and changed from "now playing" (the flaky Ynison WebSocket) to "recently played, 5 items" via `GET https://api.music.yandex.net/music-history?fullModelsCount=15`. This approach was proven by a throwaway test on 2026-10-10: HTTP 200 in ~0.15s, full track models with title, artists and `coverUri`. `fullModelsCount` counts history entries, not tracks, so the widget requests about 15 and keeps the first 5 tracks that have a `fullModel`.
 5. Profile README: `<picture>` updates for every rebuilt card. Typing headers, the capsule divider and badges stay as they are.

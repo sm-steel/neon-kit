@@ -81,7 +81,7 @@ Tools are pinned with [mise](https://mise.jdx.dev): `mise install && npm ci`.
 - `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`
 - `node preview/preview.ts --serve` renders sample cards in every flavor at http://127.0.0.1:8766/, shown on GitHub's light and dark backgrounds.
 
-Releases are published to npm from GitHub Actions via trusted publishing (no tokens) when a `v*` tag is pushed.
+Releases are staged on npm from GitHub Actions via trusted publishing (no tokens) when a `v*` tag is pushed, and go live once a maintainer approves them with 2FA.
 
 ## License
 

@@ -23,4 +23,6 @@ jobs:
         run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
       # No token: npm trusts this workflow via OIDC (configured on npmjs.com).
       # Requires npm >= 11.5.1 (Node 24.21 ships 11.19) and a GitHub-hosted runner.
-      - run: npm publish --access public
+      # Staged: the version only goes live after a maintainer approves it with 2FA
+      # (npmjs.com, or `npm stage approve`). The trusted publisher does not allow `npm publish`.
+      - run: npm stage publish --access public

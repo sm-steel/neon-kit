@@ -34,13 +34,12 @@ const range = (a: number, b: number) =>
 /** Characters each variant must contain; the build fails if any is missing. */
 const REQUIRED = {
 	hud: range(0x20, 0x7e),
-	text: range(0x20, 0x7e) + range(0x410, 0x44f) + "Ёё",
+	text: `${range(0x20, 0x7e)}${range(0x410, 0x44f)}Ёё`,
 };
 /** Characters requested from the subsetter (extras are kept when the font has them). */
 const WANTED = {
 	hud: REQUIRED.hud,
-	text:
-		range(0x20, 0x7e) + range(0xa0, 0xff) + range(0x400, 0x45f) + "–—‘’“”…•",
+	text: `${range(0x20, 0x7e)}${range(0xa0, 0xff)}${range(0x400, 0x45f)}–—‘’“”…•`,
 };
 
 const sha256 = (b: Buffer) => createHash("sha256").update(b).digest("hex");

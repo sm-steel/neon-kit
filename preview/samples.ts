@@ -2,10 +2,11 @@
 // consumers (bio/stack cards, MAL stats, Yandex recently-played).
 import {
 	type CardOptions,
-	CHAR_WIDTH_EM,
+	charsPerLine,
 	esc,
 	FONT_STACK,
 	type Palette,
+	wrapLines,
 } from "../src/index.ts";
 
 /** Image URL → data URI, downloaded by preview.ts (never committed). */
@@ -21,23 +22,8 @@ const W = 868;
 const BODY = 16;
 const LINE = 24;
 
-/** Greedy word wrap for a monospace font. */
-function wrap(text: string, width: number, size: number): string[] {
-	const max = Math.floor(width / (size * CHAR_WIDTH_EM));
-	const lines: string[] = [];
-	let line = "";
-	for (const word of text.split(" ")) {
-		if (line && `${line} ${word}`.length > max) {
-			lines.push(line);
-			line = word;
-		} else line = line ? `${line} ${word}` : word;
-	}
-	if (line) lines.push(line);
-	return lines;
-}
-
 const paragraph = (text: string, width: number, p: Palette) =>
-	wrap(text, width, BODY)
+	wrapLines(text, charsPerLine(width, BODY))
 		.map(
 			(l, i) =>
 				`<text x="0" y="${16 + i * LINE}" fill="${p.text}" font-size="${BODY}">${esc(l)}</text>`,
@@ -110,7 +96,10 @@ const ANIME: [string, string][] = [
 		"Fullmetal Alchemist: Brotherhood",
 		"https://cdn.myanimelist.net/images/anime/1208/94745.jpg",
 	],
-	["Steins;Gate", "https://cdn.myanimelist.net/images/anime/1935/127974.jpg"],
+	[
+		"Akuyaku Reijou Level 99: Watashi wa Ura-Boss desu ga Maou dewa Arimasen",
+		"https://cdn.myanimelist.net/images/anime/1150/140028.jpg",
+	],
 ];
 
 export const IMAGE_URLS = [
@@ -177,8 +166,13 @@ export const SAMPLES: Sample[] = [
 			const posters = ANIME.map(
 				([title, url], i) =>
 					picture(`mal-p${i}`, img[url], i * 290, 96, 60, 84, p) +
-					`<text x="${i * 290 + 72}" y="114" font-size="13" fill="${p.text}">${esc(truncate(title, 26))}</text>` +
-					`<text x="${i * 290 + 72}" y="132" font-size="11" fill="${p.subtext}">1mo ago</text>`,
+					wrapLines(title, charsPerLine(200, 13), 3)
+						.map(
+							(l, k) =>
+								`<text x="${i * 290 + 72}" y="${110 + k * 17}" font-size="13" fill="${p.text}">${esc(l)}</text>`,
+						)
+						.join("") +
+					`<text x="${i * 290 + 72}" y="172" font-size="11" fill="${p.subtext}">1mo ago</text>`,
 			).join("");
 			return `<g font-family="${FONT_STACK}">${tiles}${posters}</g>`;
 		},

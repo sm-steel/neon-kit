@@ -38,4 +38,5 @@ export {
 	PALETTE_KEYS,
 	type Palette,
 } from "./palette.ts";
+export { charsPerLine, wrapLines } from "./text.ts";
 export { esc, r3, seeded } from "./util.ts";

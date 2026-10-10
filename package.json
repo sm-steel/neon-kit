@@ -1,6 +1,6 @@
 {
 	"name": "@sm-steel/neon-kit",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Cyberpunk neon SVG panel kit: Catppuccin frame, corner brackets, scanlines, scan beam, glitch tears and an embedded Monaspace Neon subset",
 	"license": "MIT",
 	"type": "module",

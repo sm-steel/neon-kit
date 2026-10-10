@@ -53,9 +53,16 @@ describe("card", () => {
 		expect(svg).toContain("prefers-reduced-motion");
 	});
 
-	it("emits the reduced-motion rule last, so it overrides every animation", () => {
-		const svg = card({ ...base, title: "t" }, content);
-		expect(svg).toContain(`${REDUCED_MOTION_CSS}</style>`);
+	it("emits the reduced-motion rule as the last stylesheet, after any CSS in the content", () => {
+		const animated =
+			'<style>.spin{animation:spin 1s infinite}</style><text class="spin">x</text>';
+		const svg = card({ ...base, title: "t" }, animated);
+		expect(svg.endsWith(`<style>${REDUCED_MOTION_CSS}</style></svg>`)).toBe(
+			true,
+		);
+		expect(svg.indexOf(REDUCED_MOTION_CSS)).toBeGreaterThan(
+			svg.indexOf(".spin{animation"),
+		);
 	});
 
 	it("embeds the hud font only when a title is set, unless overridden", () => {

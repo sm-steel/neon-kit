@@ -14,6 +14,10 @@ export function wrapLines(
 	maxChars: number,
 	maxLines = Number.POSITIVE_INFINITY,
 ): string[] {
+	if (!(maxChars >= 1))
+		throw new Error(`wrapLines: maxChars must be at least 1, got ${maxChars}`);
+	if (!(maxLines >= 1))
+		throw new Error(`wrapLines: maxLines must be at least 1, got ${maxLines}`);
 	const len = (s: string) => [...s].length;
 	const lines: string[] = [];
 	let line = "";

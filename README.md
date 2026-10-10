@@ -63,7 +63,7 @@ Draw your content from `0,0`. `card()` places it inside the frame. Escape any us
 | Glitch tear | one ~0.13s tear per 10s; position, shift and timing come from `seed` |
 | Cursor blink | 1.1s |
 
-Viewers with `prefers-reduced-motion: reduce` get a static card. Light palettes (latte) use lighter scanlines and a softer beam.
+Viewers with `prefers-reduced-motion: reduce` get a static card. The rule sits in the last `<style>` of the SVG, so it also stops animations in your own content's stylesheets. Inline `style="animation:…"` attributes can't be overridden, so animate content with classes instead. Light palettes (latte) use lighter scanlines and a softer beam.
 
 ## Font
 

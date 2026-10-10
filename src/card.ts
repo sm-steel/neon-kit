@@ -108,8 +108,7 @@ export function card(o: CardOptions, content: string): string {
 					delay: CARD.bootSeconds,
 				})) +
 		(o.title ? CURSOR_CSS : "") +
-		glitch.css +
-		REDUCED_MOTION_CSS;
+		glitch.css;
 	const defs =
 		(o.scanlines === false ? "" : scanlineDefs(p)) +
 		(o.beam === false ? "" : beamDefs(p)) +
@@ -130,6 +129,8 @@ export function card(o: CardOptions, content: string): string {
 		(o.scanlines === false ? "" : scanlines(region)) +
 		(o.beam === false ? "" : beam(region)) +
 		`<g class="nk-brk">${brackets(width, height, p)}</g>` +
+		// last stylesheet in the document, so it also beats CSS that came in with `content`
+		`<style>${REDUCED_MOTION_CSS}</style>` +
 		`</svg>`
 	);
 }

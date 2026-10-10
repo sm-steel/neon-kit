@@ -112,7 +112,9 @@ export const CURSOR_CSS =
 
 /**
  * Turns every animation off for viewers who prefer reduced motion. `:root *` has the same
- * specificity as the kit's single-class animation rules, so it wins by order: emit it last.
+ * specificity as single-class animation rules, so it wins by order: emit it in the last
+ * `<style>` of the document (card() does). Inline `style="animation:…"` attributes can't be
+ * overridden by any stylesheet, so content shouldn't animate that way.
  */
 export const REDUCED_MOTION_CSS =
 	"@media (prefers-reduced-motion:reduce){:root *{animation:none}}";

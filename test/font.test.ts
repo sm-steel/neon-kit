@@ -35,6 +35,11 @@ describe("embedded fonts", () => {
 		expect(names.get(1)).toBe(FONT_FAMILY);
 		expect(names.get(0)).toMatch(/GitHub/);
 		expect(names.get(13)).toMatch(/Open Font License/);
+		// OFL Reserved Font Name: no identifying name record may say "Monaspace"
+		for (const id of [1, 2, 3, 4, 5, 6])
+			expect(names.get(id) ?? "").not.toMatch(/monaspace/i);
+		// the credit lives in the description instead
+		expect(names.get(10)).toMatch(/subset of Monaspace Neon 1\.400/);
 		expect(advanceEm(font, 0x41)).toBe(CHAR_WIDTH_EM);
 	});
 

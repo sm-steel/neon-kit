@@ -52,6 +52,12 @@ describe("wrapLines", () => {
 		expect(wrapLines("   ", 10)).toEqual([]);
 	});
 
+	it("rejects a line narrower than one character instead of looping", () => {
+		expect(() => wrapLines("abc", 0)).toThrow(/maxChars/);
+		expect(() => wrapLines("abc", charsPerLine(5, 13))).toThrow(/maxChars/);
+		expect(() => wrapLines("abc", 10, 0)).toThrow(/maxLines/);
+	});
+
 	it("adds the ellipsis even when the cut lands exactly at a line end", () => {
 		expect(wrapLines("aaaa bbbb cccc", 4, 2)).toEqual(["aaaa", "bbb…"]);
 	});

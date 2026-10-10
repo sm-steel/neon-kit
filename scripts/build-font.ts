@@ -93,12 +93,8 @@ function verify(sfnt: Buffer, required: string, label: string): void {
 	if (adv !== 0.62)
 		throw new Error(`${label}: advance of "A" is ${adv}em, expected 0.62em`);
 	for (const r of readNames(font.tables.get("name") as Buffer)) {
-		if (
-			r.id >= 1 &&
-			r.id <= 6 &&
-			/monaspace/i.test(nameText(r)) &&
-			!/subset of/i.test(nameText(r))
-		) {
+		// OFL Reserved Font Name: none of the identifying records (1-6) may say "Monaspace"
+		if (r.id >= 1 && r.id <= 6 && /monaspace/i.test(nameText(r))) {
 			throw new Error(
 				`${label}: name ID ${r.id} still uses the reserved name: ${nameText(r)}`,
 			);
@@ -126,10 +122,15 @@ async function build(
 			winName(0, notices.copyright),
 			winName(1, FAMILY),
 			winName(2, style),
-			winName(3, `${FAMILY} ${style}; subset of Monaspace Neon 1.400`),
+			winName(3, `ContribNeonMono-${style};1.400`),
 			winName(4, `${FAMILY} ${style}`),
 			winName(5, "Version 1.400"),
 			winName(6, `ContribNeonMono-${style}`),
+			// credit goes in the description, which isn't an identifying name
+			winName(
+				10,
+				`${FAMILY} ${style}: a subset of Monaspace Neon 1.400 by GitHub, Inc., renamed per the SIL OFL 1.1 Reserved Font Name clause.`,
+			),
 			winName(13, notices.license),
 			winName(14, "https://openfontlicense.org"),
 		]),

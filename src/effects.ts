@@ -110,5 +110,9 @@ export function bootCss(seconds: number): string {
 export const CURSOR_CSS =
 	".nk-cur{animation:nk-blink 1.1s steps(1,end) infinite}@keyframes nk-blink{50%{opacity:0}}";
 
+/**
+ * Turns every animation off for viewers who prefer reduced motion. `:root *` has the same
+ * specificity as the kit's single-class animation rules, so it wins by order: emit it last.
+ */
 export const REDUCED_MOTION_CSS =
-	"@media (prefers-reduced-motion:reduce){*{animation:none!important}}";
+	"@media (prefers-reduced-motion:reduce){:root *{animation:none}}";

@@ -93,9 +93,11 @@ describe("css", () => {
 		expect(CURSOR_CSS).toContain(
 			".nk-cur{animation:nk-blink 1.1s steps(1,end) infinite}",
 		);
+		// `:root *` matches single-class specificity; as the last rule it wins without !important
 		expect(REDUCED_MOTION_CSS).toBe(
-			"@media (prefers-reduced-motion:reduce){*{animation:none!important}}",
+			"@media (prefers-reduced-motion:reduce){:root *{animation:none}}",
 		);
+		expect(REDUCED_MOTION_CSS).not.toContain("!important");
 	});
 	it("tint filters cover the whole region", () => {
 		expect(tintDefs(dark, region)).toContain(

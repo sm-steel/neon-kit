@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CARD, card, cardTears } from "../src/card.ts";
+import { REDUCED_MOTION_CSS } from "../src/effects.ts";
 import { FLAVORS } from "../src/palette.ts";
 
 const base = {
@@ -50,6 +51,11 @@ describe("card", () => {
 		expect(svg).not.toContain("url(#nk-sl)");
 		expect(svg).not.toContain("nk-boot{");
 		expect(svg).toContain("prefers-reduced-motion");
+	});
+
+	it("emits the reduced-motion rule last, so it overrides every animation", () => {
+		const svg = card({ ...base, title: "t" }, content);
+		expect(svg).toContain(`${REDUCED_MOTION_CSS}</style>`);
 	});
 
 	it("embeds the hud font only when a title is set, unless overridden", () => {

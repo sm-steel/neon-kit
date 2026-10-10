@@ -112,3 +112,13 @@ if (process.argv.includes("--serve")) {
 		console.log("serving http://127.0.0.1:8766/"),
 	);
 }
+
+// README hero image (committed): the bio sample in Mocha.
+const hero = SAMPLES.find((s) => s.name === "bio") as (typeof SAMPLES)[number];
+await writeFile(
+	"preview/hero.svg",
+	card(
+		{ ...hero.options, palette: FLAVORS.mocha },
+		hero.content(FLAVORS.mocha, images),
+	),
+);

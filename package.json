@@ -1,0 +1,41 @@
+{
+	"name": "@sm-steel/neon-kit",
+	"version": "0.0.0",
+	"description": "Cyberpunk neon SVG panel kit: Catppuccin frame, corner brackets, scanlines, scan beam, glitch tears and an embedded Monaspace Neon subset",
+	"license": "MIT",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sm-steel/neon-kit.git"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"fonts/OFL.txt"
+	],
+	"sideEffects": false,
+	"engines": {
+		"node": ">=22.18"
+	},
+	"scripts": {
+		"test": "vitest run",
+		"lint": "biome check .",
+		"typecheck": "tsc --noEmit",
+		"build": "tsc -p tsconfig.build.json",
+		"build:font": "node scripts/build-font.ts",
+		"preview": "node preview/preview.ts"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.15",
+		"@types/node": "^26.6.5",
+		"subset-font": "^2.9.0",
+		"typescript": "^7.0.2",
+		"vitest": "^5.0.3",
+		"wawoff2": "^2.0.1"
+	}
+}

@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`seeded > matches contrib-neon's generator (same first value for 'sm-steel') 1`] = `0.7880380351562053`;

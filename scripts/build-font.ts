@@ -1,0 +1,161 @@
+// Builds src/font-data.ts: subsets of Monaspace Neon v1.400, pinned to static weights,
+// renamed "ContribNeon Mono" (the OFL reserves the name "Monaspace" for unmodified
+// fonts), with the original copyright and license kept in the name table.
+// Run: npm run build:font
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
+import subsetFont from "subset-font";
+import wawoff2 from "wawoff2";
+import {
+	advanceEm,
+	nameText,
+	readCmap,
+	readNames,
+	readSfnt,
+	winName,
+	writeNames,
+	writeSfnt,
+} from "./sfnt.ts";
+
+const SOURCE_URL =
+	"https://raw.githubusercontent.com/githubnext/monaspace/v1.400/fonts/Web%20Fonts/Variable%20Web%20Fonts/Monaspace%20Neon/Monaspace%20Neon%20Var.woff2";
+const SOURCE_SHA256 =
+	"6569968f448ae856ab5b57dff1f13b109b220ca8e3f664169e135fcb5c4f0721";
+const CACHE = "node_modules/.cache/neon-kit/MonaspaceNeonVar-1.400.woff2";
+const FAMILY = "ContribNeon Mono";
+const OUT = "src/font-data.ts";
+
+const range = (a: number, b: number) =>
+	Array.from({ length: b - a + 1 }, (_, i) => String.fromCodePoint(a + i)).join(
+		"",
+	);
+
+/** Characters each variant must contain; the build fails if any is missing. */
+const REQUIRED = {
+	hud: range(0x20, 0x7e),
+	text: range(0x20, 0x7e) + range(0x410, 0x44f) + "Ёё",
+};
+/** Characters requested from the subsetter (extras are kept when the font has them). */
+const WANTED = {
+	hud: REQUIRED.hud,
+	text:
+		range(0x20, 0x7e) + range(0xa0, 0xff) + range(0x400, 0x45f) + "–—‘’“”…•",
+};
+
+const sha256 = (b: Buffer) => createHash("sha256").update(b).digest("hex");
+
+async function source(): Promise<Buffer> {
+	let buf: Buffer;
+	try {
+		buf = await readFile(CACHE);
+	} catch {
+		const res = await fetch(SOURCE_URL);
+		if (!res.ok)
+			throw new Error(`Download failed: HTTP ${res.status} for ${SOURCE_URL}`);
+		buf = Buffer.from(await res.arrayBuffer());
+		await mkdir(dirname(CACHE), { recursive: true });
+		await writeFile(CACHE, buf);
+	}
+	const got = sha256(buf);
+	if (got !== SOURCE_SHA256)
+		throw new Error(`Source font checksum mismatch: ${got}`);
+	return buf;
+}
+
+async function sourceNotices(
+	src: Buffer,
+): Promise<{ copyright: string; license: string }> {
+	const raw = Buffer.from(await wawoff2.decompress(src));
+	const names = readNames(readSfnt(raw).tables.get("name") as Buffer).filter(
+		(r) => r.platform === 3,
+	);
+	const text = (id: number) => {
+		const r = names.find((n) => n.id === id);
+		if (!r) throw new Error(`Source font has no name ID ${id}`);
+		return nameText(r);
+	};
+	return { copyright: text(7), license: text(13) };
+}
+
+function verify(sfnt: Buffer, required: string, label: string): void {
+	const font = readSfnt(sfnt);
+	if (font.tables.has("CFF "))
+		throw new Error(`${label}: unexpected CFF table`);
+	const cmap = readCmap(font.tables.get("cmap") as Buffer);
+	const missing = [...required].filter(
+		(ch) => !cmap.has(ch.codePointAt(0) as number),
+	);
+	if (missing.length)
+		throw new Error(
+			`${label}: missing glyphs ${JSON.stringify(missing.join(""))}`,
+		);
+	const adv = advanceEm(font, 0x41);
+	if (adv !== 0.62)
+		throw new Error(`${label}: advance of "A" is ${adv}em, expected 0.62em`);
+	for (const r of readNames(font.tables.get("name") as Buffer)) {
+		if (
+			r.id >= 1 &&
+			r.id <= 6 &&
+			/monaspace/i.test(nameText(r)) &&
+			!/subset of/i.test(nameText(r))
+		) {
+			throw new Error(
+				`${label}: name ID ${r.id} still uses the reserved name: ${nameText(r)}`,
+			);
+		}
+	}
+}
+
+async function build(
+	src: Buffer,
+	notices: { copyright: string; license: string },
+	variant: "hud" | "text",
+	weight: 400 | 700,
+): Promise<string> {
+	const style = weight === 700 ? "Bold" : "Regular";
+	const subset = await subsetFont(src, WANTED[variant], {
+		targetFormat: "sfnt",
+		noLayoutClosure: true,
+		variationAxes: { wght: weight, wdth: 100, slnt: 0 },
+	});
+	const font = readSfnt(Buffer.from(subset));
+	font.tables.delete("STAT"); // axis names point at name records we drop
+	font.tables.set(
+		"name",
+		writeNames([
+			winName(0, notices.copyright),
+			winName(1, FAMILY),
+			winName(2, style),
+			winName(3, `${FAMILY} ${style}; subset of Monaspace Neon 1.400`),
+			winName(4, `${FAMILY} ${style}`),
+			winName(5, "Version 1.400"),
+			winName(6, `ContribNeonMono-${style}`),
+			winName(13, notices.license),
+			winName(14, "https://openfontlicense.org"),
+		]),
+	);
+	const sfnt = writeSfnt(font);
+	verify(sfnt, REQUIRED[variant], `${variant} ${weight}`);
+	const woff2 = Buffer.from(await wawoff2.compress(sfnt));
+	console.log(`${variant} ${weight}: ${woff2.length} bytes woff2`);
+	return woff2.toString("base64");
+}
+
+const src = await source();
+const notices = await sourceNotices(src);
+const [hud400, text400, text700] = [
+	await build(src, notices, "hud", 400),
+	await build(src, notices, "text", 400),
+	await build(src, notices, "text", 700),
+];
+await writeFile(
+	OUT,
+	"// Generated by scripts/build-font.ts from Monaspace Neon v1.400\n" +
+		'// (c) 2023 GitHub, Inc., SIL Open Font License 1.1, renamed "ContribNeon Mono"\n' +
+		"// per the OFL Reserved Font Name clause. See fonts/OFL.txt. Do not edit.\n" +
+		`export const HUD_400 = "${hud400}";\n` +
+		`export const TEXT_400 = "${text400}";\n` +
+		`export const TEXT_700 = "${text700}";\n`,
+);
+console.log(`wrote ${OUT}`);
